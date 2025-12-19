@@ -1,5 +1,5 @@
-fastapi
-uvicorn
-langchain
-pydantic
-python-dotenv
+langchain-huggingface==0.1.2
+langchain-core==0.3.15
+huggingface-hub==0.26.2
+pydantic==2.10.3
+python-dotenv==1.0.1
