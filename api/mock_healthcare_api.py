@@ -10,7 +10,6 @@ class MockHealthcareAPI:
     """Simulated healthcare backend for demo purposes"""
     
     def __init__(self):
-        # Mock patient database
         self.patients = {
             "P001": Patient(
                 id="P001",
@@ -29,6 +28,15 @@ class MockHealthcareAPI:
                 phone="+91-9876543211",
                 email="priya.sharma@email.com",
                 insurance_id="INS-PS-2024"
+            ),
+            "P003": Patient(
+                id="P003",
+                name="Amit Singh",
+                date_of_birth="1978-11-05",
+                gender="male",
+                phone="+91-9876543212",
+                email="amit.singh@email.com",
+                insurance_id="INS-AS-2024"
             )
         }
         
@@ -38,7 +46,7 @@ class MockHealthcareAPI:
     def search_patient(self, name: str = None, patient_id: str = None) -> Optional[Patient]:
         """Search for patient by name or ID"""
         if patient_id:
-            return self. patients.get(patient_id)
+            return self.patients.get(patient_id)
         
         if name:
             for patient in self.patients.values():
@@ -62,7 +70,6 @@ class MockHealthcareAPI:
                 message="No insurance found for patient"
             )
         
-        # Simulate eligibility check
         return InsuranceEligibility(
             patient_id=patient_id,
             insurance_id=patient.insurance_id,
@@ -118,7 +125,7 @@ class MockHealthcareAPI:
             
             current += timedelta(days=1)
         
-        return slots[: 5]  # Return top 5 slots
+        return slots[: 5] 
     
     def book_appointment(
         self,
@@ -132,13 +139,10 @@ class MockHealthcareAPI:
         if not patient:
             raise ValueError(f"Patient {patient_id} not found")
         
-        # In real implementation, would validate slot availability
-        # For demo, create appointment with mock data
         
         appointment_id = f"APT-{self.appointment_counter:06d}"
         self.appointment_counter += 1
         
-        # Mock slot details (in real system, would fetch from slot_id)
         start_time = datetime.now() + timedelta(days=7)
         
         appointment = Appointment(
@@ -158,5 +162,4 @@ class MockHealthcareAPI:
         self.appointments[appointment_id] = appointment
         return appointment
 
-# Global instance
 healthcare_api = MockHealthcareAPI()

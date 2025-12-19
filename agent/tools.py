@@ -6,7 +6,6 @@ from utils.audit_logger import audit_logger
 from utils.config import config
 import uuid
 
-# Tool functions (no LangChain dependencies)
 
 def search_patient_func(name: Optional[str] = None, patient_id: Optional[str] = None) -> dict:
     """Search for a patient by name or ID"""
@@ -14,7 +13,6 @@ def search_patient_func(name: Optional[str] = None, patient_id: Optional[str] = 
     
     args = {"name": name, "patient_id": patient_id}
     
-    # Validate
     is_valid, message = input_validator. validate_search_patient(args)
     if not is_valid:  
         audit_logger.log_error(f"Validation failed: {message}", request_id)

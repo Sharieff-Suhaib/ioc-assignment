@@ -11,7 +11,6 @@ class AuditLogger:
         self.log_dir = Path(log_dir)
         self.log_dir.mkdir(exist_ok=True)
         
-        # Setup file logger
         log_file = self. log_dir / f"audit_{datetime.now().strftime('%Y%m%d')}.log"
         
         logging.basicConfig(

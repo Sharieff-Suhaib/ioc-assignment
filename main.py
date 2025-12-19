@@ -29,13 +29,11 @@ def main():
     print(f"Mode: {'🧪 DRY RUN' if config.DRY_RUN_MODE else '🚀 LIVE'}")
     print_separator()
     
-    # Create agent
     print("Initializing agent...")
     agent = create_agent()
     print("✓ Agent initialized successfully")
     print_separator()
     
-    # Test cases
     test_cases = [
         "Schedule a cardiology follow-up for patient Ravi Kumar next week and check insurance eligibility",
         "Find me available orthopedics slots for next month for patient Priya Sharma",
@@ -57,7 +55,6 @@ def main():
         
         print_separator()
     
-    # Interactive mode
     print("\n🎯 Interactive Mode - Try your own requests!")
     print("Examples:")
     print("  - Schedule cardiology appointment for Ravi Kumar")

@@ -82,26 +82,21 @@ Response (JSON only):"""
         
         print("🔄 Initializing LLM...")
         
-        # Initialize HuggingFace LLM
         llm_endpoint = HuggingFaceEndpoint(
             repo_id="mistralai/Mistral-7B-Instruct-v0.2",
-            task="conversational",  # ✅ Change to conversational
-            huggingfacehub_api_token=config.HUGGINGFACE_API_KEY,
+            task="conversational",
+            huggingfacehub_api_token=config.API_KEY,
             max_new_tokens=1024,
             temperature=0.1,
         )
 
-    # Wrap it in ChatHuggingFace
         self.llm = ChatHuggingFace(llm=llm_endpoint)
         
-        # Create prompt template
         self.prompt = ChatPromptTemplate. from_template(self.SYSTEM_PROMPT)
         
-        # JSON parser
         self.json_parser = JsonOutputParser()
         
-        # Map function names to actual functions
-        self. function_map = {
+        self.function_map = {
             "search_patient": search_patient_func,
             "check_insurance_eligibility": check_insurance_func,
             "find_available_slots": find_slots_func,
@@ -115,20 +110,16 @@ Response (JSON only):"""
         try:
             import re
             
-            # Handle both string and AIMessage object
             if hasattr(response, 'content'):
-                response_text = response. content  # ✅ Extract from AIMessage
+                response_text = response.content  
             else:
                 response_text = str(response)
             
-            # Remove markdown code blocks if present
             response_text = re.sub(r'```json\s*', '', response_text)
             response_text = re. sub(r'```\s*', '', response_text)
             
-            # Remove extra text after JSON
-            response_text = response_text.split('\n\nReplace')[0]  # ✅ Remove the "Replace XX and YY" note
+            response_text = response_text.split('\n\nReplace')[0]  
             
-            # Find JSON object
             json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
             if json_match:
                 json_str = json_match.group()
@@ -178,14 +169,12 @@ Response (JSON only):"""
         
         for i, action in enumerate(actions):
             function_name = action.get('function')
-            args = action.get('args', {}).copy()  # Make a copy to avoid modifying original
+            args = action.get('args', {}).copy()
             
             print(f"⚙️ Executing function {i+1}/{len(actions)}: {function_name}")
             
-            # Replace all placeholder values in arguments
             for key, value in list(args.items()):
                 if isinstance(value, str):
-                    # Replace {PATIENT_ID}
                     if '{PATIENT_ID}' in value: 
                         if 'patient_id' in context:
                             args[key] = context['patient_id']
@@ -193,7 +182,6 @@ Response (JSON only):"""
                         else: 
                             print(f"   ⚠️ Warning: {{{key.upper()}}} placeholder but no patient_id in context yet")
                     
-                    # Replace {SLOT_ID}
                     if '{SLOT_ID}' in value:
                         if 'slot_id' in context:
                             args[key] = context['slot_id']
@@ -207,18 +195,15 @@ Response (JSON only):"""
                 continue
             
             try: 
-                # Fix date placeholders
                 if 'start_date' in args and ('XX' in str(args.get('start_date', '')) or 'YY' in str(args.get('end_date', ''))):
                     start = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
                     end = (datetime.now() + timedelta(days=14)).strftime('%Y-%m-%d')
                     args['start_date'] = start
                     args['end_date'] = end
                 
-                # Execute function
                 result = func(**args)
                 results.append({"function": function_name, "result":  result})
                 
-                # Store context for subsequent calls
                 if function_name == "search_patient" and "id" in result and not result. get("error"):
                     context['patient_id'] = result['id']
                     print(f"   💾 Stored patient_id = {context['patient_id']}")
@@ -242,7 +227,6 @@ Response (JSON only):"""
         results = []
         input_lower = user_input.lower()
         
-        # Extract patient
         patient_name = None
         patient_id = None
         
@@ -262,12 +246,10 @@ Response (JSON only):"""
             if "id" in result:
                 patient_id = result["id"]
         
-        # Check insurance
         if patient_id and ("insurance" in input_lower or "eligibility" in input_lower):
             result = check_insurance_func(patient_id)
             results.append({"function": "check_insurance_eligibility", "result": result})
         
-        # Find slots
         specialty = None
         if "cardio" in input_lower:
             specialty = "cardiology"
@@ -292,10 +274,8 @@ Response (JSON only):"""
         """Process a clinical workflow request using LLM"""
         request_id = str(uuid.uuid4())[:8]
         
-        # Log request
         audit_logger.log_request(user_input, request_id)
         
-        # Safety check
         is_safe, safety_message = validator.check_safety(user_input)
         if not is_safe: 
             audit_logger.log_refusal(safety_message, request_id)
@@ -306,15 +286,12 @@ Response (JSON only):"""
             }
         
         try:
-            # Try LLM-based workflow first
             try:
                 results = self.execute_llm_workflow(user_input)
             except Exception as e:
                 print(f"⚠️  LLM workflow failed: {e}")
-                # Fallback to rule-based
                 results = self.execute_rule_based_workflow(user_input)
             
-            # Check for refusal
             if results and results[0]. get("function") == "refusal":
                 return {
                     "status":  "refused",
@@ -325,7 +302,7 @@ Response (JSON only):"""
             if not results:
                 return {
                     "status": "error",
-                    "error": "Could not understand request.  Please specify patient and desired action.",
+                    "error": "Could not understand request. Please specify patient and desired action.",
                     "request_id": request_id
                 }
             
@@ -382,7 +359,7 @@ Response (JSON only):"""
                     summary.append(f"  Appointment ID: {result['appointment_id']}")
                     summary.append(f"  Patient:  {result['patient_name']}")
                     summary.append(f"  Provider: {result['provider']} ({result['specialty']})")
-                    summary. append(f"  Time: {result['start_time']}")
+                    summary.append(f"  Time: {result['start_time']}")
                     summary.append(f"  Location: {result['location']}")
         
         return "\n".join(summary) if summary else "No actions completed"
